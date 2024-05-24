@@ -4,9 +4,9 @@ use dir_diff;
 use std::io::Cursor;
 use std::path::PathBuf;
 use std::sync::Once;
+use zip::result::ZipError::InvalidArchive;
 use zip_extract::ZipExtractError::Zip;
 use zip_extract::{extract, ZipExtractError};
-use zip_next::result::ZipError::InvalidArchive;
 
 static INIT: Once = Once::new();
 
@@ -28,6 +28,7 @@ fn valid_archive() {
     target.push("test"); // let zip-extract create it
 
     extract(Cursor::new(source), &target, true).unwrap();
+
     assert!(!dir_diff::is_different(target, "tests/data/valid").unwrap());
 }
 

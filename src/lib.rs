@@ -40,7 +40,7 @@ use thiserror::Error;
 
 /// Re-export of zip's error type, for convenience.
 ///
-pub use zip_next::result::ZipError;
+pub use zip::result::ZipError;
 
 /// zip-extract's error type
 #[derive(Error, Debug)]
@@ -84,7 +84,7 @@ pub fn extract<S: Read + Seek>(
         fs::create_dir(&target_dir)?;
     }
 
-    let mut archive = zip_next::ZipArchive::new(source)?;
+    let mut archive = zip::ZipArchive::new(source)?;
 
     let do_strip_toplevel = strip_toplevel && has_toplevel(&mut archive)?;
 
@@ -186,8 +186,8 @@ pub fn extract<S: Read + Seek>(
 }
 
 fn has_toplevel<S: Read + Seek>(
-    archive: &mut zip_next::ZipArchive<S>,
-) -> Result<bool, zip_next::result::ZipError> {
+    archive: &mut zip::ZipArchive<S>,
+) -> Result<bool, zip::result::ZipError> {
     let mut toplevel_dir: Option<PathBuf> = None;
     if archive.len() < 2 {
         return Ok(false);
@@ -215,7 +215,7 @@ fn has_toplevel<S: Read + Seek>(
 }
 
 #[cfg(unix)]
-fn set_unix_mode(file: &zip_next::read::ZipFile, outpath: &Path) -> io::Result<()> {
+fn set_unix_mode(file: &zip::read::ZipFile, outpath: &Path) -> io::Result<()> {
     if let Some(m) = file.unix_mode() {
         fs::set_permissions(&outpath, PermissionsExt::from_mode(m))?
     }
