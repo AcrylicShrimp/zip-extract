@@ -10,24 +10,24 @@ keywords = ["zip", "archive", "extract"]
 categories = ["compression"]
 
 [features]
-aes-crypto = ["zip_next/aes-crypto"]
-deflate = ["zip_next/deflate"]
-deflate64 = ["zip_next/deflate64"]
-deflate-miniz = ["zip_next/deflate-miniz"]
-deflate-zlib = ["zip_next/deflate-zlib"]
-unreserved = ["zip_next/unreserved"]
-bzip2 = ["zip_next/bzip2"]
-time = ["zip_next/time"]
-zstd = ["zip_next/zstd"]
+aes-crypto = ["zip/aes-crypto"]
+deflate = ["zip/deflate"]
+deflate64 = ["zip/deflate64"]
+deflate-miniz = ["zip/deflate-miniz"]
+deflate-zlib = ["zip/deflate-zlib"]
+unreserved = ["zip/unreserved"]
+bzip2 = ["zip/bzip2"]
+time = ["zip/time"]
+zstd = ["zip/zstd"]
 default = ["aes-crypto", "bzip2", "deflate", "deflate64", "zstd"]
 
 [dependencies]
 log = "0.4"
-zip_next = { git = "https://github.com/anatawa12/zip-rs", branch = "deflate64-next" }
+zip = { version = "2" }
 encoding_rs = "0.8"
-thiserror = "1.0"
+thiserror = "1"
 
 [dev-dependencies]
 cute-log = { version = "2.0.7", default_features = false }
-dir-diff = "0.3.2"
-tempfile = "3.4.0"
+dir-diff = "0.3.3"
+tempfile = "3.10.1"
