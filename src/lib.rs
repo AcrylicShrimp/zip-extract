@@ -32,11 +32,13 @@ extern crate log;
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 
-use encoding_rs::{CoderResult, SHIFT_JIS};
+use chardetng::EncodingDetector;
+use encoding_rs::CoderResult;
 use std::io::{Read, Seek};
 use std::path::{Component, Path, PathBuf, StripPrefixError};
 use std::{fs, io};
 use thiserror::Error;
+use zip::read::ZipFile;
 
 /// Re-export of zip's error type, for convenience.
 ///
@@ -108,27 +110,11 @@ pub fn extract<S: Read + Seek>(
     debug!("Extracting to {}", target_dir.to_string_lossy());
     for i in 0..archive.len() {
         let mut file = archive.by_index(i)?;
-        let relative_path = {
-            let decoder = SHIFT_JIS.new_decoder();
-            let mut str = String::with_capacity(
-                if let Some(len) = decoder.max_utf8_buffer_length(file.name_raw().len()) {
-                    len
-                } else {
-                    continue;
-                },
-            );
-            let (result, ..) =
-                SHIFT_JIS
-                    .new_decoder()
-                    .decode_to_string(file.name_raw(), &mut str, true);
-
-            if result != CoderResult::InputEmpty {
-                continue;
-            }
-
-            str
+        let file_name = match decode_file_name(&file) {
+            Some(filename) => filename,
+            None => continue,
         };
-        let mut relative_path = if let Some(enclosed_name) = enclosed_name(&relative_path) {
+        let mut relative_path = if let Some(enclosed_name) = enclosed_name(&file_name) {
             enclosed_name.to_path_buf()
         } else {
             continue;
@@ -183,6 +169,30 @@ pub fn extract<S: Read + Seek>(
 
     debug!("Extracted {} files", archive.len());
     Ok(())
+}
+
+fn decode_file_name(file: &ZipFile) -> Option<String> {
+    let encoding = detect_encoding(file.name_raw());
+    let mut decoder = encoding.new_decoder();
+    let largest_buffer_length = decoder.max_utf8_buffer_length(file.name_raw().len())?;
+    let mut str = String::with_capacity(largest_buffer_length);
+    let (result, ..) = decoder.decode_to_string(file.name_raw(), &mut str, true);
+
+    match result {
+        CoderResult::InputEmpty => Some(str),
+        CoderResult::OutputFull => None,
+    }
+}
+
+fn detect_encoding(bytes: &[u8]) -> &'static encoding_rs::Encoding {
+    // Initialize the encoding detector
+    let mut detector = EncodingDetector::new();
+
+    // Feed the bytes to the detector
+    detector.feed(bytes, true);
+
+    // Guess the encoding
+    detector.guess(None, true)
 }
 
 fn has_toplevel<S: Read + Seek>(
