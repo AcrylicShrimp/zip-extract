@@ -1,12 +1,17 @@
 # zip-extract
-[![CI](https://github.com/MCOfficer/zip-extract/workflows/CI/badge.svg)](https://github.com/MCOfficer/zip-extract/actions)
-[![Crates.io](https://img.shields.io/crates/v/zip-extract)](https://crates.io/crates/zip-extract)
-[![Docs.rs](https://docs.rs/zip-extract/badge.svg)](https://docs.rs/zip-extract/)
 
 zip-extract's primary goal is simple: Automate tedious zip extraction. Ever wanted to just unpack
 an archive somewhere? Well, here you go.
 
+## Forked!
+
+This is a forked project. The main changes are:
+
+- Add support of file name encoding detection, for SHIFT-JIS or other non-UTF8 encoded file names.
+- Use up-to-date `zip` crate. Mainly for `deflate64`.
+
 ## Usage
+
 ```rust
 let archive: Vec<u8> = download_my_archive()?;
 let target_dir = PathBuf::from("my_target_dir"); // Doesn't need to exist
@@ -16,13 +21,14 @@ let target_dir = PathBuf::from("my_target_dir"); // Doesn't need to exist
 zip_extract::extract(Cursor::new(archive), &target_dir, true)?;
 ```
 
-
 ## Features
-All features are passed through to `zip` and `flate2`. They are:
 
-- `deflate`: Support for the Deflate algorithm (`miniz_oxide` rust-backend)
-- `deflate-miniz`: ^ dito (`miniz` C-backend)
-- `deflate-zlib`: ^ dito (`zlib` C-backend)
-- `bzip2`: Support for .bzip2 archives via the `bzip2` crate
+All features are passed through to `zip`. Visit `zip` for detail: https://github.com/zip-rs/zip2?tab=readme-ov-file#features
 
-The default is `bzip2` and `deflate`.
+default features are:
+
+- `aes-crypto`
+- `bzip2`
+- `deflate`
+- `deflate64`
+- `zstd`
